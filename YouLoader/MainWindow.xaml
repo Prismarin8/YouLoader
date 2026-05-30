@@ -1,0 +1,311 @@
+﻿<Window x:Class="YouLoader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:YouLoader"
+        Title="YouLoader — YouTube Загрузчик" 
+        Height="720" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    <Window.Resources>
+        <!-- Конвертеры -->
+        <local:BoolToColorConverter x:Key="BoolToColor"/>
+        <local:BoolToStatusConverter x:Key="BoolToStatus"/>
+
+        <!-- Базовые кисти (будут переопределяться темой) -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#FF6B00"/>
+        <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#E65C00"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#F8F9FA"/>
+        <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#1A1A2E"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6C757D"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#E9ECEF"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="#FEF3E8"/>
+        <SolidColorBrush x:Key="LogBackground" Color="#F8F9FA"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#DC3545"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#28A745"/>
+
+        <DropShadowEffect x:Key="CardShadow" Color="#000000" BlurRadius="20" ShadowDepth="0" Opacity="0.08"/>
+
+        <!-- Стили контролов (упрощённые, но рабочие) -->
+        <Style x:Key="AccentButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+            <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RowBackground" Value="{DynamicResource CardBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="RowHeight" Value="35"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="40"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource BackgroundBrush}" Margin="8">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок с переключателем темы -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource PrimaryBrush}" Width="40" Height="40" CornerRadius="10">
+                        <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="20" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="YouLoader" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="YouTube загрузчик" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+                </StackPanel>
+                <ToggleButton x:Name="ThemeToggle" Grid.Column="1" Width="50" Height="26" Checked="ThemeToggle_Checked" Unchecked="ThemeToggle_Unchecked">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="13" Width="50" Height="26">
+                                            <Border x:Name="Thumb" Width="22" Height="22" CornerRadius="11" Background="White" HorizontalAlignment="Left" Margin="2"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+            </Grid>
+
+            <TabControl x:Name="mainTabControl" Grid.Row="1" BorderBrush="Transparent" Background="Transparent">
+                <!-- Вкладка 1: Новая загрузка -->
+                <TabItem Header="📥 Новая загрузка">
+                    <Border Background="{DynamicResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,10,0,0" Effect="{DynamicResource CardShadow}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Ссылка на видео" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtUrl" Margin="0,0,10,0"/>
+                                <Button Grid.Column="1" Content="Вставить" Style="{StaticResource SecondaryButton}" Width="90" Click="PasteUrl_Click"/>
+                            </Grid>
+
+                            <Grid Grid.Row="2" Margin="0,20,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="Качество" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <ComboBox x:Name="cmbQuality" SelectedIndex="0">
+                                        <ComboBoxItem>🎬 Лучшее (видео+аудио)</ComboBoxItem>
+                                        <ComboBoxItem>📺 1080p</ComboBoxItem>
+                                        <ComboBoxItem>📺 720p</ComboBoxItem>
+                                        <ComboBoxItem>📱 360p</ComboBoxItem>
+                                        <ComboBoxItem>🎵 Только аудио (MP3)</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                    <TextBlock Text="Формат" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <ComboBox x:Name="cmbFormat" SelectedIndex="0">
+                                        <ComboBoxItem>MP4</ComboBoxItem>
+                                        <ComboBoxItem>MKV</ComboBoxItem>
+                                        <ComboBoxItem>WEBM</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                    <TextBlock Text="Опции" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <CheckBox x:Name="chkUseCookies" Content="🍪 Использовать cookies" IsChecked="True"/>
+                                </StackPanel>
+                                <Button Grid.Column="3" Content="Отменить" Style="{StaticResource SecondaryButton}" Width="100" Click="CancelDownload_Click"/>
+                            </Grid>
+
+                            <Button x:Name="btnDownload" Grid.Row="3" Style="{StaticResource AccentButton}" Content="🚀 Скачать" Height="48" Click="BtnDownload_Click" HorizontalAlignment="Right" Width="160"/>
+
+                            <TextBlock Grid.Row="4" Text="📋 Журнал" FontWeight="SemiBold" Margin="0,20,0,8"/>
+                            <TextBox x:Name="txtLog" Grid.Row="5" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                                     FontFamily="Consolas" FontSize="12" AcceptsReturn="True" TextWrapping="Wrap"
+                                     Background="{DynamicResource LogBackground}" BorderBrush="{DynamicResource BorderBrush}"
+                                     BorderThickness="1" Padding="10" Height="150"/>
+                        </Grid>
+                    </Border>
+                </TabItem>
+
+                <!-- Вкладка 2: Очередь -->
+                <TabItem Header="📋 Очередь">
+                    <Border Background="{DynamicResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,10,0,0" Effect="{DynamicResource CardShadow}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <Button Content="➕ Добавить" Style="{StaticResource AccentButton}" Click="BtnAddToQueue_Click" Margin="0,0,8,0"/>
+                                <Button Content="▶ Запустить" Style="{StaticResource AccentButton}" Click="StartQueue_Click" Margin="0,0,8,0"/>
+                                <Button Content="🗑 Очистить" Style="{StaticResource SecondaryButton}" Click="ClearQueue_Click"/>
+                            </StackPanel>
+                            <DataGrid x:Name="dgQueue" Grid.Row="1" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="URL" Binding="{Binding Url}" Width="*"/>
+                                    <DataGridTextColumn Header="Качество" Binding="{Binding Quality}" Width="110"/>
+                                    <DataGridTextColumn Header="Формат" Binding="{Binding Format}" Width="80"/>
+                                    <DataGridTemplateColumn Header="Действия" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="↑" Tag="{Binding Id}" Click="MoveUpQueue_Click" Style="{StaticResource SecondaryButton}" Width="30" Margin="2"/>
+                                                    <Button Content="↓" Tag="{Binding Id}" Click="MoveDownQueue_Click" Style="{StaticResource SecondaryButton}" Width="30" Margin="2"/>
+                                                    <Button Content="✕" Tag="{Binding Id}" Click="RemoveFromQueue_Click" Style="{StaticResource SecondaryButton}" Width="30" Foreground="{DynamicResource ErrorBrush}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </TabItem>
+
+                <!-- Вкладка 3: История -->
+                <TabItem Header="🕐 История">
+                    <Border Background="{DynamicResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,10,0,0" Effect="{DynamicResource CardShadow}">
+                        <DataGrid x:Name="dgHistory" AutoGenerateColumns="False" IsReadOnly="True" MouseDoubleClick="History_MouseDoubleClick">
+                            <DataGrid.Resources>
+                                <ContextMenu x:Key="RowMenu">
+                                    <MenuItem Header="▶ Повторить загрузку" Click="HistoryReDownload_Click"/>
+                                    <MenuItem Header="📂 Открыть папку" Click="HistoryOpenFolder_Click"/>
+                                    <MenuItem Header="📋 Копировать ссылку" Click="HistoryCopyUrl_Click"/>
+                                </ContextMenu>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="📅 Дата" Binding="{Binding DateAdded}" Width="140"/>
+                                <DataGridTextColumn Header="📹 Название" Binding="{Binding Title}" Width="*"/>
+                                <DataGridTextColumn Header="🎯 Качество" Binding="{Binding Quality}" Width="100"/>
+                                <DataGridTemplateColumn Header="✅ Статус" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="6,4" CornerRadius="20" Background="{Binding IsSuccess, Converter={StaticResource BoolToColor}}">
+                                                <TextBlock Text="{Binding IsSuccess, Converter={StaticResource BoolToStatus}}" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="ContextMenu" Value="{StaticResource RowMenu}"/>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+                    </Border>
+                </TabItem>
+
+                <!-- Вкладка 4: Настройки -->
+                <TabItem Header="⚙️ Настройки">
+                    <Border Background="{DynamicResource CardBrush}" CornerRadius="12" Padding="20" Margin="0,10,0,0" Effect="{DynamicResource CardShadow}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
+                            <Grid MaxWidth="700">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="📁 Папка загрузок" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,24">
+                                    <TextBox x:Name="txtDownloadPath" Width="420" Margin="0,0,12,0"/>
+                                    <Button Content="Обзор..." Style="{StaticResource SecondaryButton}" Width="100" Click="SelectDownloadFolder_Click"/>
+                                </StackPanel>
+                                <TextBlock Text="🍪 Файл cookies.txt" FontWeight="SemiBold" Margin="0,0,0,12" Grid.Row="2"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0,0,0,24">
+                                    <TextBox x:Name="txtCookiesPath" Width="420" Margin="0,0,12,0"/>
+                                    <Button Content="Обзор..." Style="{StaticResource SecondaryButton}" Width="100" Click="SelectCookiesFile_Click"/>
+                                </StackPanel>
+                                <TextBlock Text="🔓 Обходчик (.bat)" FontWeight="SemiBold" Margin="0,0,0,12" Grid.Row="4"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,0,0,28">
+                                    <TextBox x:Name="txtBypassBat" Width="420" Margin="0,0,12,0"/>
+                                    <Button Content="Обзор..." Style="{StaticResource SecondaryButton}" Width="100" Click="SelectBypassBat_Click"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                                    <Button Content="Отмена" Style="{StaticResource SecondaryButton}" Width="120" Height="40" Margin="0,0,12,0" Click="CancelSettings_Click"/>
+                                    <Button Content="💾 Сохранить" Style="{StaticResource AccentButton}" Width="200" Height="40" Click="SaveSettings_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </ScrollViewer>
+                    </Border>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Border>
+</Window>
